@@ -11,6 +11,6 @@ Upcoming features include:
 
   - ~~Autodetection of HDHomeRuns~~
   - Multiple streams at once (ultrafast h.264 does not take that much CPU).
-  - Autodetection of supported codecs (libfdk_aac, while it sounds much better, is not available everywhere)
+  - ~~Autodetection of supported codecs (libfdk_aac, while it sounds much better, is not available everywhere)~~
   - Pulling channels from an HDHomeRun.
   
