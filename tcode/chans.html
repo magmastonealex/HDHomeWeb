@@ -1,0 +1,154 @@
+<html>
+<head>
+
+<script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="initial-scale=1, maximum-scale=1">
+</head>
+<body>
+
+<select id="chanSelect">
+  <option value="41_1">Global (HD) </option>
+  <option value="41_2">Global (SD) </option>
+  <option value="23_1">CW</option>
+  <option value="19_1">TVO</option>
+  <option value="9_1">CTV</option>
+  <option value="11_1">CHCH</option>
+  <option value="35_1">CTV Two</option>
+  <option value="47_1">OMNI 1</option>
+  <option value="57_1">CITY TV</option>
+  <option value="17_1">PBS Buffalo</option>
+
+</select>
+<br>
+<br>
+<a href="#" class="clickedCast">Cast</a> | <a href="#" class="clickedStream">Stream</a> | <a href="#" class="clickedVLC">VLC Plugin!</a>
+
+<script>
+function sessionListener(e) {
+  session = e;
+  if (session.media.length != 0) {
+    console.log("MediaDiscovered");
+    //onMediaDiscovered('onRequestSessionSuccess', session.media[0]);
+  }
+}
+function clickme(chan){
+    console.log("clk");
+    chrome.cast.requestSession(onRequestSessionSuccess, onLaunchError);
+}
+function receiverListener(e) {
+  if( e === chrome.cast.ReceiverAvailability.AVAILABLE) {
+    console.log("Available");
+  }
+}
+function onLaunchError(e){
+console.log("LaunchError");
+}
+window.curMedia="http://192.168.0.141:7090/out.m3u8"
+//window.curMedia="http://magmastone.net/nhl/proxy.php/nlds150.cdnak.neulion.com/nlds_vod/nhl/vod/2014/10/25/107/2_107_bos_tor_1415_h_whole_1_ipad.mp4.m3u8"
+//window.curMedia="http://nhl.cdnllnwnl.neulion.net/u/nhlmobile/vod/nhl/2014/10/25/107/2_107_bos_tor_1415_h_continuous_1_1600.mp4";
+function onRequestSessionSuccess(e) {
+      session = e;
+var mediaInfo = new chrome.cast.media.MediaInfo(window.curMedia);
+  mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
+  mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
+mediaInfo.contentType = 'application/x-mpegURL';
+//mediaInfo.metadata.images = [{'url':"http://nhl.cdnllnwnl.neulion.net/u/www/thumbs/2014/10/25/653927_eb.jpg"}];
+var request = new chrome.cast.media.LoadRequest(mediaInfo);
+console.log("Requesting...")
+session.loadMedia(request,
+   onMediaDiscovered.bind(this, 'loadMedia'),
+   onMediaError);
+}
+function onMediaError(e){
+console.log(e);
+console.log("MediaError");
+}
+
+
+function onMediaDiscovered(how, media) {
+   window.currentMedia = media;
+   console.log("MediaDiscovered");
+   media.addUpdateListener(onMediaStatusUpdate);
+}
+function OnMediaError(e){
+console.log("MediaError");
+}
+function onError(e){
+console.log("Error");
+}
+function onInitSuccess(e){
+console.log("Initted")
+}
+initializeCastApi = function() {
+  var sessionRequest = new chrome.cast.SessionRequest(chrome.cast.media.DEFAULT_MEDIA_RECEIVER_APP_ID);
+  var apiConfig = new chrome.cast.ApiConfig(sessionRequest,
+    sessionListener,
+    receiverListener);
+  chrome.cast.initialize(apiConfig, onInitSuccess, onError);
+};
+
+window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
+  if (loaded) {
+    initializeCastApi();
+  } else {
+    console.log(errorInfo);
+  }
+}
+</script>
+
+
+<script>
+function checkStream(){
+        $.get("http://192.168.0.141:7090/out.m3u8").fail(function(){
+            setTimeout(checkStream,1000);
+        }).done(function(){
+            if(window.typeS=="cast"){
+                clickme("cast");
+            }else if (window.typeS=="web"){
+                window.location.href="http://192.168.0.141:7090/out.m3u8"
+            }else{
+              var vlc = document.getElementById("vlc");
+              var it=vlc.playlist.add("http://192.168.0.141:7090/out.m3u8");
+              vlc.playlist.playItem(it);
+            }
+        });
+}
+$(document).ready(function(){
+    $(".clickedCast").click(function(){
+        chan=$("#chanSelect").val();
+        console.log($(this).attr("chan"));
+        $.get("http://192.168.0.141:7090/?chan="+chan)
+        alert("Waiting for stream to start.");
+        window.typeS="cast"
+        setTimeout(checkStream,1000);
+
+    });
+    $(".clickedStream").click(function(){
+        chan=$("#chanSelect").val();
+        $.get("http://192.168.0.141:7090/?chan="+chan)
+        alert("Waiting for stream to start.");
+        window.typeS="web"
+        setTimeout(checkStream,1000);
+        console.log($(this).attr("chan"));
+    });
+    $(".clickedVLC").click(function(){
+        chan=$("#chanSelect").val();
+        $.get("http://192.168.0.141:7090/?chan="+chan)
+        alert("Waiting for stream to start.");
+        window.typeS="vlc"
+        setTimeout(checkStream,1000);
+        console.log($(this).attr("chan"));
+    });
+
+});
+</script>
+<br>
+<br>
+
+</body>
+
+
+
+</html>
