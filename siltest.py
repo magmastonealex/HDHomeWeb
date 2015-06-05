@@ -33,14 +33,22 @@ def handshake(socky):
 timer=0
 done=False
 
-
 p=False
-channelComp=""
 
+def scanTuners():
+	p=subprocess.Popen(["hdhomerun_config","discover"],stdout=subprocess.PIPE)
+	x=p.communicate()[0]
+	return x.split("at")[1].rstrip().replace(" ","")
+
+
+
+channelComp=""
+host=""
 def start_ffmpeg():
 	global channelComp
 	global p
-	p=subprocess.Popen(["ffmpeg","-i","http://192.168.0.149:5004/auto/v"+channelComp,"-vcodec","libx264","-preset","ultrafast","-acodec","aac","-ac","2","-b:a:0","128k","-strict","-2","-vf","yadif=0:0:0","out.m3u8"])
+	global host
+	p=subprocess.Popen(["ffmpeg","-i","http://"+host+":5004/auto/v"+channelComp,"-vcodec","libx264","-preset","ultrafast","-acodec","aac","-ac","2","-b:a:0","128k","-strict","-2","-vf","yadif=0:0:0","out.m3u8"])
 
 def letsgo(chan):
 	global done
@@ -107,9 +115,10 @@ class CustomHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
 		SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
+host=scanTuners()
 #Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
+
 SocketServer.TCPServer.allow_reuse_address=True
 httpd = SocketServer.TCPServer(("", 7090), CustomHandler)
-#.allow_reuse_address=True
 
 httpd.serve_forever()
