@@ -15,21 +15,7 @@ import shutil
 
 os.chdir("tcode")
 
-def sendMessage(socke,mess):
-	tsend=str(len(mess)).ljust(8)+mess
-	socke.send(tsend.encode("utf-8"))
-	if(mess != "DONE"):
-		mlen=int(socke.recv(8).decode("utf-8"))
-		return socke.recv(mlen).split("[]:[]")
 
-def handshake(socky):
-	st="MYTH_PROTO_VERSION 77 WindMark"
-	resp=sendMessage(socky,st)
-	if resp[0]=="ACCEPT":
-		print "good"
-	else:
-		print "bad!"
-		sys.exit()
 timer=0
 done=False
 
@@ -41,14 +27,25 @@ def scanTuners():
 	return x.split("at")[1].rstrip().replace(" ","")
 
 
+def ffmpeg_codecs():
+	x=subprocess.Popen(["ffmpeg","-codecs"],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	y=x.communicate()[0]
+	print y.find("libfdk_aac")
+
 
 channelComp=""
 host=""
+
 def start_ffmpeg():
 	global channelComp
 	global p
 	global host
-	p=subprocess.Popen(["ffmpeg","-i","http://"+host+":5004/auto/v"+channelComp,"-vcodec","libx264","-preset","ultrafast","-acodec","aac","-ac","2","-b:a:0","128k","-strict","-2","-vf","yadif=0:0:0","out.m3u8"])
+	acodecs=['libfdk_aac', '-ac:a:0', '2', '-vbr', '5']
+	if ffmpeg_codecs() == -1:
+		print "Hey. You. Get FFmpeg with libfdk_aac! Your ears will thank you!"
+		acodecs=["aac","-ac","2","-b:a:0","128k","-strict","-2"]
+	logfile = open('/tmp/ffmpeg_log.txt', 'w')
+	p=subprocess.Popen(["ffmpeg","-i","http://"+host+":5004/auto/v"+channelComp,"-vcodec","libx264","-preset","ultrafast","-acodec"]+acodecs+["-vf","yadif=0:0:0","out.m3u8"],stdout=logfile,stderr=logfile)
 
 def letsgo(chan):
 	global done
@@ -122,3 +119,4 @@ SocketServer.TCPServer.allow_reuse_address=True
 httpd = SocketServer.TCPServer(("", 7090), CustomHandler)
 
 httpd.serve_forever()
+
