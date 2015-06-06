@@ -9,16 +9,7 @@
 <body>
 
 <select id="chanSelect">
-  <option value="41_1">Global (HD) </option>
-  <option value="41_2">Global (SD) </option>
-  <option value="23_1">CW</option>
-  <option value="19_1">TVO</option>
-  <option value="9_1">CTV</option>
-  <option value="11_1">CHCH</option>
-  <option value="35_1">CTV Two</option>
-  <option value="47_1">OMNI 1</option>
-  <option value="57_1">CITY TV</option>
-  <option value="17_1">PBS Buffalo</option>
+ 
 
 </select>
 <br>
@@ -116,6 +107,15 @@ function checkStream(){
         });
 }
 $(document).ready(function(){
+
+  $.getJSON("http://192.168.0.149/lineup.json").done(function(data){
+    for (var i = data.length - 1; i >= 0; i--) {
+      z=data[i]["GuideNumber"].split(".");
+      toadd="<option value='"+z[0]+"_"+z[1]+"'>"+data[i]["GuideName"]+"</option>";
+      $("#chanSelect").append(toadd);
+    };
+  });
+
     $(".clickedCast").click(function(){
         chan=$("#chanSelect").val();
         console.log($(this).attr("chan"));

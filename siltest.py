@@ -59,11 +59,13 @@ def letsgo(chan):
 	thread2.start()
 	while done==False: # get 10MB of the file...
 		elapsed_time = time.time() - timer
-		if elapsed_time > 20 and timer != 0:
+		print "here "+str(elapsed_time)+" "+str(timer)
+		if int(elapsed_time) > 20 and timer != 0:
 			done=True
 			happening=False
 			p.kill()
 		time.sleep(5)
+	print "over"
 	import glob
 	files = glob.glob('./*.ts')
 	for f in files:
@@ -82,14 +84,12 @@ class CustomHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		global timer
 		elapsed_time = time.time() - timer
 		print elapsed_time
-
 		if timer==0 or elapsed_time < 20:
 			timer=time.time()
 		else:
-			print "WEDONEHERE"
+			print "Stream finished! Cleaning up!"
 			done=True
 			happening=False
-
 		if self.path.find("?chan="):
 			if happening==False:
 				ch=self.path.split("?chan=")
@@ -113,6 +113,9 @@ class CustomHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 		SimpleHTTPServer.SimpleHTTPRequestHandler.do_GET(self)
 
 host=scanTuners()
+o=open("ip.txt","w")
+o.write(host)
+o.close()
 #Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
 
 SocketServer.TCPServer.allow_reuse_address=True

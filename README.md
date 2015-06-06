@@ -5,7 +5,7 @@ Right now, this script is not capable of too much, just the core functionality. 
 
 It pulls data from HTTP on the HDHomeRun, which provides much, much clearer video amongst heavy network traffic, especially compared to UDP or even RTP mode.
 
-Requires FFmpeg (with libfdk_aac for now), python2.
+Requires FFmpeg (with libfdk_aac for now), python2, hdhomerun_config somewhere in $PATH.
 
 Upcoming features include:
 
