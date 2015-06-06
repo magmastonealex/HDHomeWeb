@@ -36,7 +36,7 @@ function receiverListener(e) {
 function onLaunchError(e){
 console.log("LaunchError");
 }
-window.curMedia="http://192.168.0.141:7090/out.m3u8"
+window.curMedia="http://"+window.location.hostname+":"+window.location.port+"/out.m3u8"
 //window.curMedia="http://magmastone.net/nhl/proxy.php/nlds150.cdnak.neulion.com/nlds_vod/nhl/vod/2014/10/25/107/2_107_bos_tor_1415_h_whole_1_ipad.mp4.m3u8"
 //window.curMedia="http://nhl.cdnllnwnl.neulion.net/u/nhlmobile/vod/nhl/2014/10/25/107/2_107_bos_tor_1415_h_continuous_1_1600.mp4";
 function onRequestSessionSuccess(e) {
@@ -92,23 +92,24 @@ window['__onGCastApiAvailable'] = function(loaded, errorInfo) {
 
 <script>
 function checkStream(){
-        $.get("http://192.168.0.141:7090/out.m3u8").fail(function(){
+        $.get("http://"+window.location.hostname+":"+window.location.port+"/out.m3u8").fail(function(){
             setTimeout(checkStream,1000);
         }).done(function(){
             if(window.typeS=="cast"){
                 clickme("cast");
             }else if (window.typeS=="web"){
-                window.location.href="http://192.168.0.141:7090/out.m3u8"
+                window.location.href="http://"+window.location.hostname+":"+window.location.port+"/out.m3u8"
             }else{
               var vlc = document.getElementById("vlc");
-              var it=vlc.playlist.add("http://192.168.0.141:7090/out.m3u8");
+              var it=vlc.playlist.add("http://"+window.location.hostname+":"+window.location.port+"/out.m3u8");
               vlc.playlist.playItem(it);
             }
         });
 }
 $(document).ready(function(){
-
-  $.getJSON("http://192.168.0.149/lineup.json").done(function(data){
+$.get("/ip.txt").done(function(hdmr){
+  window.ip=hdmr;
+  $.getJSON("http://"+window.ip+"/lineup.json").done(function(data){
     for (var i = data.length - 1; i >= 0; i--) {
       z=data[i]["GuideNumber"].split(".");
       toadd="<option value='"+z[0]+"_"+z[1]+"'>"+data[i]["GuideName"]+"</option>";
@@ -119,7 +120,7 @@ $(document).ready(function(){
     $(".clickedCast").click(function(){
         chan=$("#chanSelect").val();
         console.log($(this).attr("chan"));
-        $.get("http://192.168.0.141:7090/?chan="+chan)
+        $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
         alert("Waiting for stream to start.");
         window.typeS="cast"
         setTimeout(checkStream,1000);
@@ -127,7 +128,7 @@ $(document).ready(function(){
     });
     $(".clickedStream").click(function(){
         chan=$("#chanSelect").val();
-        $.get("http://192.168.0.141:7090/?chan="+chan)
+        $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
         alert("Waiting for stream to start.");
         window.typeS="web"
         setTimeout(checkStream,1000);
@@ -135,13 +136,13 @@ $(document).ready(function(){
     });
     $(".clickedVLC").click(function(){
         chan=$("#chanSelect").val();
-        $.get("http://192.168.0.141:7090/?chan="+chan)
+        $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
         alert("Waiting for stream to start.");
         window.typeS="vlc"
         setTimeout(checkStream,1000);
         console.log($(this).attr("chan"));
     });
-
+});
 });
 </script>
 <br>
