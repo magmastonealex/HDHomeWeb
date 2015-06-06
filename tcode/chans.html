@@ -1,29 +1,89 @@
+<!DOCTYPE html>
 <html>
 <head>
-
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+.hider{
+  display: none;
+}
+</style>
 <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+<title>HDHomeRun Chromecaster</title>
+
 </head>
 <body>
-
-<select id="chanSelect">
+<div class="container">
+<div class="page-header">
+  <h1>ChromeCast</h1>
+  <h3 id="statusH">Status: Not Playing</h3>
+  <h3 id="statusT">Time: </h3>
+</div>
+<select id="chanSelect" class="form-control">
  
 
 </select>
 <br>
 <br>
-<a href="#" class="clickedCast">Cast</a> | <a href="#" class="clickedStream">Stream</a> | <a href="#" class="clickedVLC">VLC Plugin!</a>
+<center>
+<!--<div class="btn-group" role="group"> -->
+<button type="button" class="clickedCast btn  btn-primary">Cast</button> |
+<button type="button" class="clickedStream btn btn-info">Stream</button> 
+<div id="hider" class="hider">
+|
+<button type="button" id="pause" class="btn  btn-primary">Pause</button>|
+<button type="button" id="play" class="btn  btn-primary">Play</button>|
+<button type="button" id="Stop" class="btn  btn-primary">Stop</button>
+</div>
+<!--</div> -->
+</center>
+</div>
+<script>
+String.prototype.toFormatted = function () {
+    var sec_num = parseInt(this, 10); // don't forget the second param
+    var hours   = Math.floor(sec_num / 3600);
+    var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+    var seconds = sec_num - (hours * 3600) - (minutes * 60);
 
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    var time    = hours+':'+minutes+':'+seconds;
+    return time;
+}
+</script>
 <script>
 function sessionListener(e) {
   session = e;
+  window.currentSession=e;
   if (session.media.length != 0) {
     console.log("MediaDiscovered");
+    
     //onMediaDiscovered('onRequestSessionSuccess', session.media[0]);
   }
+  session.addUpdateListener(sessionUpdateListener);
 }
+
+function sessionUpdateListener(isAlive) {
+  console.log("sessionUpdate: "+ isAlive.toString());
+  if (!isAlive) {
+      $("#statusH").text("Status: Stopped");
+      $("#hider").addClass("hider");
+    if (window.gTimer) {
+      clearInterval(window.gTimer);
+    }
+
+  }
+}
+
 function clickme(chan){
     console.log("clk");
     chrome.cast.requestSession(onRequestSessionSuccess, onLaunchError);
@@ -41,6 +101,8 @@ window.curMedia="http://"+window.location.hostname+":"+window.location.port+"/ou
 //window.curMedia="http://nhl.cdnllnwnl.neulion.net/u/nhlmobile/vod/nhl/2014/10/25/107/2_107_bos_tor_1415_h_continuous_1_1600.mp4";
 function onRequestSessionSuccess(e) {
       session = e;
+      window.currentSession=e;
+      session.addUpdateListener(sessionUpdateListener);
 var mediaInfo = new chrome.cast.media.MediaInfo(window.curMedia);
   mediaInfo.metadata = new chrome.cast.media.GenericMediaMetadata();
   mediaInfo.metadata.metadataType = chrome.cast.media.MetadataType.GENERIC;
@@ -57,12 +119,41 @@ console.log(e);
 console.log("MediaError");
 }
 
-
+var currentMediaSession=null;
 function onMediaDiscovered(how, media) {
    window.currentMedia = media;
+   currentMediaSession=media
    console.log("MediaDiscovered");
+   $("#hider").removeClass("hider");
+   $("#statusH").text("Status: "+currentMediaSession.playerState);
    media.addUpdateListener(onMediaStatusUpdate);
 }
+window.progressFlag=1;
+
+function updateTime(){
+  s= currentMediaSession.getEstimatedTime().toString();
+        $("#statusT").text("Time: "+s.toFormatted());
+}
+
+function onMediaStatusUpdate(isAlive) {
+  console.log(isAlive);
+  if (!isAlive) {
+    currentMediaTime = 0;
+  }
+  else {
+    console.log(currentMediaSession.playerState);
+    if (currentMediaSession.playerState == 'PLAYING') {
+      if(!window.gTimer){
+        window.gTimer=setInterval(updateTime,1000);
+        s=currentMediaSession.currentTime.toString();
+        $("#statusT").text("Time: "+s.toFormatted());
+        //document.getElementById('playpauseresume').innerHTML = 'Pause';
+    }
+    }
+  }
+  $("#statusH").text("Status: "+currentMediaSession.playerState);
+}
+
 function OnMediaError(e){
 console.log("MediaError");
 }
@@ -107,6 +198,18 @@ function checkStream(){
         });
 }
 $(document).ready(function(){
+  $("#Stop").click(function(){
+    window.currentSession.stop(function(){
+      $("#hider").addClass("hider");
+
+    },function(){});
+  });
+  $("#pause").click(function(){
+    window.currentMedia.pause();
+  });
+  $("#play").click(function(){
+    window.currentMedia.play();
+  });
 $.get("/ip.txt").done(function(hdmr){
   window.ip=hdmr;
   $.getJSON("http://"+window.ip+"/lineup.json").done(function(data){
@@ -134,14 +237,7 @@ $.get("/ip.txt").done(function(hdmr){
         setTimeout(checkStream,1000);
         console.log($(this).attr("chan"));
     });
-    $(".clickedVLC").click(function(){
-        chan=$("#chanSelect").val();
-        $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
-        alert("Waiting for stream to start.");
-        window.typeS="vlc"
-        setTimeout(checkStream,1000);
-        console.log($(this).attr("chan"));
-    });
+
 });
 });
 </script>
