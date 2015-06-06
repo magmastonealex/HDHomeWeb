@@ -30,7 +30,7 @@ def scanTuners():
 def ffmpeg_codecs():
 	x=subprocess.Popen(["ffmpeg","-codecs"],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	y=x.communicate()[0]
-	print y.find("libfdk_aac")
+	return y.find("libfdk_aac")
 
 
 channelComp=""
