@@ -158,6 +158,9 @@ function onMediaStatusUpdate(isAlive) {
         s=currentMediaSession.currentTime.toString();
         $("#statusT").text("Time: "+s.toFormatted());
         //document.getElementById('playpauseresume').innerHTML = 'Pause';
+    }else{
+      clearInterval(window.gTimer);
+      window.gTimer=setInterval(updateTime,1000);
     }
     }
   }
