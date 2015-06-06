@@ -30,7 +30,7 @@ def scanTuners():
 def ffmpeg_codecs():
 	x=subprocess.Popen(["ffmpeg","-codecs"],stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	y=x.communicate()[0]
-	return y.find("libfdk_aac")
+	print y.find("libfdk_aac")
 
 
 channelComp=""
@@ -45,7 +45,7 @@ def start_ffmpeg():
 		print "Hey. You. Get FFmpeg with libfdk_aac! Your ears will thank you!"
 		acodecs=["aac","-ac","2","-b:a:0","128k","-strict","-2"]
 	logfile = open('/tmp/ffmpeg_log.txt', 'w')
-	p=subprocess.Popen(["ffmpeg","-i","http://"+host+":5004/auto/v"+channelComp,"-vcodec","libx264","-preset","ultrafast","-acodec"]+acodecs+["-vf","yadif=0:0:0","out.m3u8"],stdout=logfile,stderr=logfile)
+	p=subprocess.Popen(["ffmpeg","-i","http://"+host+":5004/auto/v"+channelComp,"-vcodec","libx264","-preset","veryfast","-acodec"]+acodecs+["-vf","yadif=0:0:0","out.m3u8"],stdout=logfile,stderr=logfile)
 
 def letsgo(chan):
 	global done
@@ -71,6 +71,7 @@ def letsgo(chan):
 	for f in files:
 	    os.remove(f)
 	os.remove("./out.m3u8")
+
 
 
 
