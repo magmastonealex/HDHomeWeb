@@ -1,11 +1,19 @@
 # HDHomeWeb
 HDHomeRun chromecast/Web streaming, simplified!
 
-Right now, this script is not capable of too much, just the core functionality. It can start streams from pre-selected channels to chromecasts and web clients (HLS, so Android and iOS).
+This Python script (Linux only right now, sorry!) allows you to stream channels from your HDHomeRun to your Chromecast/mobile device (HLS, so iOS and Android).
 
 It pulls data from HTTP on the HDHomeRun, which provides much, much clearer video amongst heavy network traffic, especially compared to UDP or even RTP mode.
 
-Requires FFmpeg (with libfdk_aac for now), python2, hdhomerun_config somewhere in $PATH.
+Requires FFmpeg, python2, hdhomerun_config somewhere in $PATH.
+
+To run it:
+  - Make sure you've scanned for channels with your HDHomeRun's web interface.
+  - `python2 main.py`
+  - Visit `http://youriphere:7090/chans.html`
+  - Enjoy!
+
+The FFmpeg log file is located at /tmp/ffmpeg_log.txt.
 
 Upcoming features include:
 
@@ -13,4 +21,5 @@ Upcoming features include:
   - Multiple streams at once (ultrafast h.264 does not take that much CPU).
   - ~~Autodetection of supported codecs (libfdk_aac, while it sounds much better, is not available everywhere)~~
   - ~~Pulling channels from an HDHomeRun.~~
+  - ~~Get channel name from CRTC/FCC~~
   

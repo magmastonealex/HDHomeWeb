@@ -15,6 +15,7 @@
 <meta name="viewport" content="initial-scale=1, maximum-scale=1">
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
 <title>HDHomeRun Chromecaster</title>
@@ -23,26 +24,34 @@
 <body>
 <div class="container">
 <div class="page-header">
-  <h1>ChromeCast</h1>
-  <h3 id="statusH">Status: Not Playing</h3>
-  <h3 id="statusT">Time: </h3>
+  <h1>HDHomeCast</h1>
+  <h3>Pick a channel, then click Stream or Cast!</h3>
+
 </div>
-<select id="chanSelect" class="form-control">
+<select id="chanSelect" class="form-control"></select>
  
 
-</select>
+<div id="hiderS" class="hider">
+<b id="statusH">Status: Not Playing</b><br>
+</div>
+
+<div id="hider" class="hider">
+<b id="statusT">Time: </b><br>
+<div class="btn-group" role="group">
+<button type="button" id="pause" class="btn  btn-primary"><i class="fa fa-pause"></i></button>
+<button type="button" id="play" class="btn  btn-primary"><i class="fa fa-play"></i></button>
+<button type="button" id="Stop" class="btn  btn-warning"><i class="fa fa-stop"></i></button>
+</div>
+</div>
+
+
 <br>
 <br>
 <center>
 <!--<div class="btn-group" role="group"> -->
 <button type="button" class="clickedCast btn  btn-primary">Cast</button> |
 <button type="button" class="clickedStream btn btn-info">Stream</button> 
-<div id="hider" class="hider">
-|
-<button type="button" id="pause" class="btn  btn-primary">Pause</button>|
-<button type="button" id="play" class="btn  btn-primary">Play</button>|
-<button type="button" id="Stop" class="btn  btn-primary">Stop</button>
-</div>
+
 <!--</div> -->
 </center>
 </div>
@@ -77,6 +86,7 @@ function sessionUpdateListener(isAlive) {
   if (!isAlive) {
       $("#statusH").text("Status: Stopped");
       $("#hider").addClass("hider");
+      $("#hiderS").addClass("hider");
     if (window.gTimer) {
       clearInterval(window.gTimer);
     }
@@ -186,6 +196,7 @@ function checkStream(){
         $.get("http://"+window.location.hostname+":"+window.location.port+"/out.m3u8").fail(function(){
             setTimeout(checkStream,1000);
         }).done(function(){
+           clearInterval(window.dots);
             if(window.typeS=="cast"){
                 clickme("cast");
             }else if (window.typeS=="web"){
@@ -197,10 +208,24 @@ function checkStream(){
             }
         });
 }
+window.numdots=1
+function dotdotdot(){
+  if(window.numdots > 4){
+    window.numdots=1;
+  }else{
+    window.numdots=window.numdots+1
+  }
+  mainS="Status: Waiting";
+  for (var i = 0; i < window.numdots; i++) {
+    mainS=mainS+"."
+  };
+  $("#statusH").text(mainS);
+}
 $(document).ready(function(){
   $("#Stop").click(function(){
     window.currentSession.stop(function(){
       $("#hider").addClass("hider");
+      $("#hiderS").addClass("hider");
 
     },function(){});
   });
@@ -212,15 +237,34 @@ $(document).ready(function(){
   });
 $.get("/ip.txt").done(function(hdmr){
   window.ip=hdmr;
-  $.getJSON("http://"+window.ip+"/lineup.json").done(function(data){
+  $.getJSON("/canada.json").done(function(dataStn){
+   $.getJSON("http://"+window.ip+"/lineup.json").done(function(data){
     for (var i = data.length - 1; i >= 0; i--) {
       z=data[i]["GuideNumber"].split(".");
-      toadd="<option value='"+z[0]+"_"+z[1]+"'>"+data[i]["GuideName"]+"</option>";
+      chanIdent=data[i]["GuideName"].split("-");
+      chanChan="Unknown"
+      chanNum=data[i]["GuideNumber"];
+      if(chanIdent[0][0]=="C"){
+        chanChan=dataStn[chanIdent[0]];
+      }else if(chanIdent[0][0]=="W" || chanIdent[0][0]=="K"){
+        $.ajax({
+    type: 'GET',
+    url: 'http://jsonp.afeld.me/?url=https://data.fcc.gov/mediabureau/v01/tv/facility/search/'+chanIdent[0]+'.json',
+    dataType: 'json',
+    success: function(dat) {chanChan=dat["results"]["searchList"][0]["facilityList"][0]["networkAfil"];},
+    data: {},
+    async: false
+        });
+      }
+      toadd="<option value='"+z[0]+"_"+z[1]+"'>"+chanNum+" - "+data[i]["GuideName"]+" - "+chanChan+"</option>";
       $("#chanSelect").append(toadd);
     };
+   });
   });
 
     $(".clickedCast").click(function(){
+        $("#hiderS").removeClass("hider");
+        window.dots=setInterval(dotdotdot,100);
         chan=$("#chanSelect").val();
         console.log($(this).attr("chan"));
         $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
@@ -231,6 +275,8 @@ $.get("/ip.txt").done(function(hdmr){
     });
     $(".clickedStream").click(function(){
         chan=$("#chanSelect").val();
+        $("#hiderS").removeClass("hider");
+        window.dots=setInterval(dotdotdot,100);
         $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
         alert("Waiting for stream to start.");
         window.typeS="web"
