@@ -26,3 +26,5 @@ Upcoming features include:
   - ~~Pulling channels from an HDHomeRun.~~
   - ~~Get channel name from CRTC/FCC~~
   
+
+All code is CC BY-NC-SA 4.0
