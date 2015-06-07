@@ -8,6 +8,11 @@
 .hider{
   display: none;
 }
+.videoScaler{
+  width:100%;
+  max-height: 100%;
+  max-width: 100%;
+}
 </style>
 <script type="text/javascript" src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
@@ -43,7 +48,12 @@
 <button type="button" id="Stop" class="btn  btn-warning"><i class="fa fa-stop"></i></button>
 </div>
 </div>
-
+<br>
+<br>
+<div id="hiderV" class="hider">
+<video id="vid1" controls class="videoScaler">
+</video>
+</div>
 
 <br>
 <br>
@@ -203,7 +213,12 @@ function checkStream(){
             if(window.typeS=="cast"){
                 clickme("cast");
             }else if (window.typeS=="web"){
-                window.location.href="http://"+window.location.hostname+":"+window.location.port+"/out.m3u8"
+                $("#hiderV").removeClass("hider");
+                $("#vid1").attr("src","/out.m3u8")
+                $("#vid1").get(0).play();
+                setTimeout($("#vid1").get(0).play,400);
+                setTimeout($("#vid1").get(0).play,1000);
+                //window.location.href="http://"+window.location.hostname+":"+window.location.port+"/out.m3u8"
             }else{
               var vlc = document.getElementById("vlc");
               var it=vlc.playlist.add("http://"+window.location.hostname+":"+window.location.port+"/out.m3u8");
@@ -271,7 +286,6 @@ $.get("/ip.txt").done(function(hdmr){
         chan=$("#chanSelect").val();
         console.log($(this).attr("chan"));
         $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
-        alert("Waiting for stream to start.");
         window.typeS="cast"
         setTimeout(checkStream,1000);
 
@@ -281,7 +295,6 @@ $.get("/ip.txt").done(function(hdmr){
         $("#hiderS").removeClass("hider");
         window.dots=setInterval(dotdotdot,100);
         $.get("http://"+window.location.hostname+":"+window.location.port+"/?chan="+chan)
-        alert("Waiting for stream to start.");
         window.typeS="web"
         setTimeout(checkStream,1000);
         console.log($(this).attr("chan"));
