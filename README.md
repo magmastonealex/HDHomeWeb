@@ -15,6 +15,9 @@ To run it:
 
 The FFmpeg log file is located at /tmp/ffmpeg_log.txt.
 
+This script tries to get the name of the network of channels. This works pretty well for American channels, but the CRTC doesn't have a great (well... any) API.
+
+
 Upcoming features include:
 
   - ~~Autodetection of HDHomeRuns~~
