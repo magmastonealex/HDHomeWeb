@@ -44,7 +44,7 @@ def start_ffmpeg():
 	if ffmpeg_codecs() == -1:
 		print "Hey. You. Get FFmpeg with libfdk_aac! Your ears will thank you!"
 		acodecs=["aac","-ac","2","-b:a:0","128k","-strict","-2"]
-	logfile = open('/tmp/ffmpeg_log.txt', 'w')
+	logfile = open('../ffmpeg_log.txt', 'w')
 	p=subprocess.Popen(["ffmpeg","-i","http://"+host+":5004/auto/v"+channelComp,"-vcodec","libx264","-preset","veryfast","-acodec"]+acodecs+["-vf","yadif=0:0:0","out.m3u8"],stdout=logfile,stderr=logfile)
 
 def letsgo(chan):
