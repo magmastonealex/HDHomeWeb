@@ -1,7 +1,7 @@
 # HDHomeWeb
 HDHomeRun chromecast/Web streaming, simplified!
 
-This Python script (Linux only right now, sorry!) allows you to stream channels from your HDHomeRun to your Chromecast/mobile device (HLS, so iOS and Android).
+This Python script allows you to stream channels from your HDHomeRun to your Chromecast/mobile device (HLS, so iOS and Android). See (here)[https://github.com/magmastonealex/HDHomeWeb/wiki/Installing-under-Windows] for how to install under Windows.
 
 It pulls data from HTTP on the HDHomeRun, which provides much, much clearer video amongst heavy network traffic, especially compared to UDP or even RTP mode.
 
